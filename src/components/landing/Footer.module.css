@@ -1,0 +1,125 @@
+.cta {
+    padding: 80px 2rem;
+    text-align: center;
+  }
+  
+  .ctaInner {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 0.5px solid var(--border-hover);
+    border-radius: 24px;
+    padding: 4rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ctaGlow {
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    height: 200px;
+    background: radial-gradient(
+      ellipse,
+      rgba(184, 245, 100, 0.1) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+  
+  .ctaTitle {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  
+  .ctaSub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    line-height: 1.7;
+  }
+  
+  .ctaBtn {
+    background: var(--accent);
+    color: #0a0a0b;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  
+  .ctaBtn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+  
+  .footer {
+    border-top: 0.5px solid var(--border);
+    padding: 2rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .footerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .footerLogo {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .footerDot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  .footerTagline {
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+  
+  .footerLinks {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+  
+  .footerLinks a {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .footerLinks a:hover {
+    color: var(--text-secondary);
+  }
+  
+  @media (max-width: 768px) {
+    .ctaInner { padding: 2.5rem 1.5rem; }
+    .footer { flex-direction: column; padding: 2rem 1.25rem; }
+  }
