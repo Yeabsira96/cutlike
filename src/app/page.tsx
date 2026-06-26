@@ -1,19 +1,32 @@
-import Navbar from '@/components/landing/Navbar'
-import Hero from '@/components/landing/Hero'
-import HowItWorks from '@/components/landing/HowItWorks'
-import Features from '@/components/landing/Features'
-import Pricing from '@/components/landing/Pricing'
-import Footer from '@/components/landing/Footer'
+import { UserButton } from '@clerk/nextjs'
+import UploadPanel from '@/components/editor/UploadPanel'
+import InspoPanel from '@/components/editor/InspoPanel'
+import ChatPanel from '@/components/editor/ChatPanel'
+import styles from './page.module.css'
 
-export default function Home() {
+export default function EditorPage() {
   return (
-    <main>
-      <Navbar />
-      <Hero />
-      <HowItWorks />
-      <Features />
-      <Pricing />
-      <Footer />
-    </main>
+    <div className={styles.layout}>
+
+      {/* TOPBAR */}
+      <header className={styles.topbar}>
+        <span className={styles.logo}>
+          <span className={styles.logoDot} />
+          CutLike
+        </span>
+        <div className={styles.topbarRight}>
+          <span className={styles.projectName}>Untitled project</span>
+          <UserButton afterSignOutUrl="/" />
+        </div>
+      </header>
+
+      {/* EDITOR BODY */}
+      <div className={styles.body}>
+        <UploadPanel />
+        <InspoPanel />
+        <ChatPanel />
+      </div>
+
+    </div>
   )
 }

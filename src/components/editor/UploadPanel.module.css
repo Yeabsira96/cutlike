@@ -1,0 +1,151 @@
+.panel {
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+  
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  
+  .count {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+  
+  .dropzone {
+    margin: 16px;
+    border: 1px dashed var(--border-hover);
+    border-radius: var(--radius);
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  
+  .dropzone:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim2);
+  }
+  
+  .dragging {
+    border-color: var(--accent);
+    background: var(--accent-dim2);
+    transform: scale(1.01);
+  }
+  
+  .dropIcon {
+    font-size: 32px;
+    margin-bottom: 4px;
+  }
+  
+  .dropTitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  
+  .dropSub {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  
+  .dropHint {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+  
+  .hiddenInput {
+    display: none;
+  }
+  
+  .fileList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .fileItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  
+  .fileThumb {
+    width: 36px;
+    height: 28px;
+    background: var(--accent-dim);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    color: var(--accent);
+  }
+  
+  .fileInfo {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .fileName {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .fileSize {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+  
+  .fileRemove {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  
+  .fileRemove:hover {
+    color: var(--red);
+  }
