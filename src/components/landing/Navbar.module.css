@@ -74,3 +74,23 @@
   .nav { padding: 0 1.25rem; }
   .links { display: none; }
 }
+.cta {
+  background: var(--accent);
+  color: #0a0a0b;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cta:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}

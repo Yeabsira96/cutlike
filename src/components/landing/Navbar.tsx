@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
@@ -12,7 +13,9 @@ export default function Navbar() {
         <li><a href="#features">Features</a></li>
         <li><a href="#pricing">Pricing</a></li>
       </ul>
-      <button className={styles.cta}>Start editing free</button>
+      <Link href="/sign-up" className={styles.cta}>
+        Start editing free
+      </Link>
     </nav>
   )
 }
