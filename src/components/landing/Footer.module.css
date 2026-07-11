@@ -123,3 +123,23 @@
     .ctaInner { padding: 2.5rem 1.5rem; }
     .footer { flex-direction: column; padding: 2rem 1.25rem; }
   }
+
+  .ctaBtn {
+    display: inline-block;
+    background: var(--accent);
+    color: #0a0a0b;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    text-decoration: none;
+  }
+  
+  .ctaBtn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }

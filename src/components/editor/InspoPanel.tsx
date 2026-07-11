@@ -6,18 +6,16 @@ import styles from './InspoPanel.module.css'
 export default function InspoPanel() {
   const { state, addInspo, removeInspo, updateInspo, setIsGenerating, setTimeline, addMessage } = useEditor()
   const [input, setInput] = useState('')
+  const [analyzingUrl, setAnalyzingUrl] = useState('')
 
   async function handleAddInspo() {
     const trimmed = input.trim()
     if (!trimmed) return
     if (state.inspirations.length >= 4) return
     setInput('')
+    setAnalyzingUrl(trimmed)
 
-    // add to state first so UI updates immediately
     addInspo(trimmed, 50)
-
-    // find the inspo we just added
-    const inspoId = Date.now().toString()
 
     try {
       const res = await fetch('/api/analyze-inspo', {
@@ -29,19 +27,23 @@ export default function InspoPanel() {
       const data = await res.json()
 
       if (data.success) {
-        // update the inspo with real analysis
-        const inspirations = state.inspirations
-        const last = inspirations[inspirations.length - 1]
-        if (last) {
-          updateInspo(last.id, {
+        // find inspo by url and update it
+        const currentInspos = state.inspirations
+        const match = currentInspos.find(i => i.url === trimmed)
+        const targetId = match?.id
+
+        if (targetId) {
+          updateInspo(targetId, {
             status: 'ready',
             title: data.analysis.metadata.title,
             fingerprint: data.analysis.fingerprint,
           })
         }
       }
-    } catch {
-      console.error('Failed to analyze inspo')
+    } catch (err) {
+      console.error('Failed to analyze inspo:', err)
+    } finally {
+      setAnalyzingUrl('')
     }
   }
 
@@ -49,7 +51,7 @@ export default function InspoPanel() {
     if (state.clips.length === 0) {
       addMessage({
         role: 'ai',
-        text: 'Please upload some footage first before generating an edit.',
+        text: 'Please upload some footage first.',
         timestamp: new Date(),
       })
       return
@@ -58,7 +60,17 @@ export default function InspoPanel() {
     if (state.inspirations.length === 0) {
       addMessage({
         role: 'ai',
-        text: 'Please add at least one inspiration link so I know what style to aim for.',
+        text: 'Please add at least one inspiration link.',
+        timestamp: new Date(),
+      })
+      return
+    }
+
+    const pendingClips = state.clips.filter(c => c.status !== 'ready')
+    if (pendingClips.length > 0) {
+      addMessage({
+        role: 'ai',
+        text: 'Please click Analyze on your footage clips first.',
         timestamp: new Date(),
       })
       return
@@ -67,12 +79,12 @@ export default function InspoPanel() {
     setIsGenerating(true)
     addMessage({
       role: 'ai',
-      text: `Analyzing ${state.clips.length} clips and ${state.inspirations.length} inspiration${state.inspirations.length > 1 ? 's' : ''}. Building your edit now...`,
+      text: `Blending ${state.inspirations.length} inspiration style${state.inspirations.length > 1 ? 's' : ''} with your ${state.clips.length} clip${state.clips.length > 1 ? 's' : ''}...`,
       timestamp: new Date(),
     })
 
     try {
-      const res = await fetch('/api/chat', {
+      const chatRes = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,32 +92,76 @@ export default function InspoPanel() {
           clips: state.clips.map(c => ({
             filename: c.filename,
             duration: c.metadata?.duration || 0,
-            fingerprint: c.fingerprint,
+            fingerprint: c.fingerprint || null,
           })),
           inspirations: state.inspirations.map(i => ({
             url: i.url,
             weight: i.weight,
-            title: i.title,
-            fingerprint: i.fingerprint,
+            title: i.title || i.url,
+            fingerprint: i.fingerprint || null,
           })),
         }),
       })
 
-      const data = await res.json()
+      const chatData = await chatRes.json()
 
-      if (data.timeline) {
-        setTimeline(data.timeline)
+      if (chatData.timeline?.length > 0) {
+        setTimeline(chatData.timeline)
+        addMessage({
+          role: 'ai',
+          text: chatData.message || 'Timeline generated! Rendering your video now...',
+          timestamp: new Date(),
+        })
+
+        addMessage({
+          role: 'ai',
+          text: '⟳ Running FFmpeg — this takes 30-60 seconds depending on clip length...',
+          timestamp: new Date(),
+        })
+
+        const formData = new FormData()
+        formData.append('timeline', JSON.stringify(chatData.timeline))
+        state.clips.forEach(clip => {
+          formData.append(`file_${clip.filename}`, clip.file)
+        })
+
+        const execRes = await fetch('/api/execute', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (execRes.ok) {
+          const blob = await execRes.blob()
+          const videoUrl = URL.createObjectURL(blob)
+
+          addMessage({
+            role: 'ai',
+            text: '✓ Your edited video is ready and downloading now!',
+            timestamp: new Date(),
+          })
+
+          const a = document.createElement('a')
+          a.href = videoUrl
+          a.download = 'cutlike_edit.mp4'
+          a.click()
+        } else {
+          addMessage({
+            role: 'ai',
+            text: 'Rendering failed. Try with a shorter clip under 10MB.',
+            timestamp: new Date(),
+          })
+        }
+      } else {
+        addMessage({
+          role: 'ai',
+          text: chatData.message || 'Could not generate timeline. Make sure clips are analyzed.',
+          timestamp: new Date(),
+        })
       }
-
-      addMessage({
-        role: 'ai',
-        text: data.message || 'Edit generated! Check the timeline below.',
-        timestamp: new Date(),
-      })
     } catch {
       addMessage({
         role: 'ai',
-        text: 'Something went wrong generating the edit. Try again.',
+        text: 'Something went wrong. Check your connection and try again.',
         timestamp: new Date(),
       })
     } finally {
@@ -117,9 +173,10 @@ export default function InspoPanel() {
     if (e.key === 'Enter') handleAddInspo()
   }
 
-  function updateWeight(id: string, weight: number) {
-    updateInspo(id, { weight })
-  }
+  const allClipsReady = state.clips.length > 0 &&
+    state.clips.every(c => c.status === 'ready')
+  const allInsposReady = state.inspirations.length > 0 &&
+    state.inspirations.every(i => i.status === 'ready')
 
   return (
     <main className={styles.panel}>
@@ -137,21 +194,29 @@ export default function InspoPanel() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            disabled={!!analyzingUrl}
           />
           <button
             className={styles.addBtn}
             onClick={handleAddInspo}
-            disabled={state.inspirations.length >= 4}
+            disabled={state.inspirations.length >= 4 || !!analyzingUrl}
           >
-            +
+            {analyzingUrl ? '⟳' : '+'}
           </button>
         </div>
 
-        {state.inspirations.length === 0 && (
+        {analyzingUrl && (
+          <div className={styles.analyzingBanner}>
+            <span className={styles.analyzingDot} />
+            Analyzing video — fetching style data...
+          </div>
+        )}
+
+        {state.inspirations.length === 0 && !analyzingUrl && (
           <div className={styles.empty}>
             <p className={styles.emptyIcon}>🔗</p>
             <p className={styles.emptyText}>Add a video you want to edit like</p>
-            <p className={styles.emptySub}>Try a travel vlog, cinematic reel, or TikTok</p>
+            <p className={styles.emptySub}>Paste any YouTube or TikTok URL</p>
           </div>
         )}
 
@@ -174,16 +239,14 @@ export default function InspoPanel() {
                     </p>
                   ) : (
                     <p className={styles.linkMeta}>
-                      {inspo.status === 'analyzing' ? '⟳ analyzing...' : 'pending analysis'}
+                      {inspo.url === analyzingUrl ? '⟳ analyzing...' : '○ pending'}
                     </p>
                   )}
                 </div>
                 <button
                   className={styles.removeBtn}
                   onClick={() => removeInspo(inspo.id)}
-                >
-                  ✕
-                </button>
+                >✕</button>
               </div>
 
               <div className={styles.weightRow}>
@@ -193,7 +256,7 @@ export default function InspoPanel() {
                   min={10}
                   max={100}
                   value={inspo.weight}
-                  onChange={e => updateWeight(inspo.id, Number(e.target.value))}
+                  onChange={e => updateInspo(inspo.id, { weight: Number(e.target.value) })}
                   className={styles.slider}
                 />
                 <span className={styles.weightValue}>{inspo.weight}%</span>
@@ -203,7 +266,6 @@ export default function InspoPanel() {
         </div>
       </div>
 
-      {/* TIMELINE */}
       {state.timeline.length > 0 && (
         <div className={styles.timelineSection}>
           <p className={styles.label} style={{ padding: '0 16px', marginBottom: '8px' }}>
@@ -226,17 +288,19 @@ export default function InspoPanel() {
         </div>
       )}
 
-      {/* GENERATE BUTTON */}
       <div className={styles.generateSection}>
         <button
           className={styles.generateBtn}
           onClick={handleGenerate}
-          disabled={state.isGenerating}
+          disabled={state.isGenerating || !!analyzingUrl}
         >
-          {state.isGenerating ? '⟳ Generating...' : '✂️ Generate edit'}
+          {state.isGenerating ? '⟳ Rendering...' : '✂️ Generate edit'}
         </button>
         <p className={styles.generateHint}>
-          {state.clips.length} clip{state.clips.length !== 1 ? 's' : ''} · {state.inspirations.length} inspiration{state.inspirations.length !== 1 ? 's' : ''}
+          {allClipsReady && allInsposReady
+            ? '✓ Ready to generate'
+            : `${state.clips.length} clip${state.clips.length !== 1 ? 's' : ''} · ${state.inspirations.length} inspo`
+          }
         </p>
       </div>
     </main>

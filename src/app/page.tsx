@@ -1,84 +1,19 @@
-'use client'
-import { UserButton } from '@clerk/nextjs'
-import { EditorProvider, useEditor } from '@/context/EditorContext'
-import UploadPanel from '@/components/editor/UploadPanel'
-import InspoPanel from '@/components/editor/InspoPanel'
-import ChatPanel from '@/components/editor/ChatPanel'
-import styles from './page.module.css'
+import Navbar from '@/components/landing/Navbar'
+import Hero from '@/components/landing/Hero'
+import HowItWorks from '@/components/landing/HowItWorks'
+import Features from '@/components/landing/Features'
+import Pricing from '@/components/landing/Pricing'
+import Footer from '@/components/landing/Footer'
 
-function EditorContent() {
-  const { state } = useEditor()
-
-  async function handleExport() {
-    if (state.timeline.length === 0 || state.clips.length === 0) return
-
-    const formData = new FormData()
-    formData.append('timeline', JSON.stringify(state.timeline))
-
-    state.clips.forEach(clip => {
-      formData.append(`file_${clip.filename}`, clip.file)
-    })
-
-    const res = await fetch('/api/execute', {
-      method: 'POST',
-      body: formData,
-    })
-
-    if (res.ok) {
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'cutlike_edit.mp4'
-      a.click()
-      URL.revokeObjectURL(url)
-
-      // also get EDL from header
-      const edlBase64 = res.headers.get('X-EDL')
-      if (edlBase64) {
-        const edl = atob(edlBase64)
-        const edlBlob = new Blob([edl], { type: 'text/plain' })
-        const edlUrl = URL.createObjectURL(edlBlob)
-        const edlA = document.createElement('a')
-        edlA.href = edlUrl
-        edlA.download = 'cutlike_edit.edl'
-        edlA.click()
-        URL.revokeObjectURL(edlUrl)
-      }
-    }
-  }
-
+export default function Home() {
   return (
-    <div className={styles.layout}>
-      <header className={styles.topbar}>
-        <span className={styles.logo}>
-          <span className={styles.logoDot} />
-          CutLike
-        </span>
-        <div className={styles.topbarRight}>
-          <span className={styles.projectName}>{state.projectName}</span>
-          {state.timeline.length > 0 && (
-            <button className={styles.exportBtn} onClick={handleExport}>
-              ⬇ Export
-            </button>
-          )}
-          <UserButton afterSignOutUrl="/" />
-        </div>
-      </header>
-
-      <div className={styles.body}>
-        <UploadPanel />
-        <InspoPanel />
-        <ChatPanel />
-      </div>
-    </div>
-  )
-}
-
-export default function EditorPage() {
-  return (
-    <EditorProvider>
-      <EditorContent />
-    </EditorProvider>
+    <main>
+      <Navbar />
+      <Hero />
+      <HowItWorks />
+      <Features />
+      <Pricing />
+      <Footer />
+    </main>
   )
 }

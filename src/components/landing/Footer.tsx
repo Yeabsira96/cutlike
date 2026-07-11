@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from './Footer.module.css'
 
 export default function Footer() {
@@ -13,7 +14,9 @@ export default function Footer() {
             Upload your clips, drop your inspiration, and get a cut
             worth sharing — in minutes, not weeks.
           </p>
-          <button className={styles.ctaBtn}>Start editing free →</button>
+          <Link href="/sign-up" className={styles.ctaBtn}>
+            Start editing free →
+          </Link>
         </div>
       </div>
 

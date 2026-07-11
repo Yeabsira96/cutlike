@@ -73,6 +73,7 @@ Rules:
 - Base cut timing decisions on the actual cuts/min data from the inspiration analysis
 - If energy is high, keep shots short (1-3s). If low, keep shots longer (4-8s)
 - Match the dominant editing style from the inspirations
+- The startTime and endTime must be within the actual duration of each clip
 - If no footage or inspirations provided, ask the user to add them first
 - Always wrap timeline JSON in <timeline> tags
 - Keep your human message friendly and specific to the actual data`
@@ -84,11 +85,13 @@ Rules:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: message },
       ],
+    },
+    {
+      timeout: 60000,
     })
 
     const rawText = completion.choices[0]?.message?.content || ''
 
-    // extract timeline JSON from between <timeline> tags
     const timelineMatch = rawText.match(/<timeline>([\s\S]*?)<\/timeline>/)
     let timeline = []
 
@@ -100,7 +103,6 @@ Rules:
       }
     }
 
-    // human message = everything outside the timeline tags
     const humanMessage = rawText
       .replace(/<timeline>[\s\S]*?<\/timeline>/, '')
       .trim()

@@ -10,7 +10,10 @@ export default function SignUpPage() {
       justifyContent: 'center',
       background: '#0a0a0b'
     }}>
-      <SignUp />
+      <SignUp
+        forceRedirectUrl="/app"
+        fallbackRedirectUrl="/app"
+      />
     </div>
   )
 }

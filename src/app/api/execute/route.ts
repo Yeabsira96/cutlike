@@ -6,6 +6,8 @@ import path from 'path'
 import os from 'os'
 import fs from 'fs'
 
+export const maxDuration = 300
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -15,7 +17,6 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
 
-    // get timeline JSON
     const timelineRaw = formData.get('timeline') as string
     if (!timelineRaw) {
       return NextResponse.json({ error: 'No timeline provided' }, { status: 400 })
@@ -23,7 +24,6 @@ export async function POST(req: NextRequest) {
 
     const timeline = JSON.parse(timelineRaw)
 
-    // get all uploaded video files and save to tmp
     const fileMap: Record<string, string> = {}
 
     for (const [key, value] of formData.entries()) {
@@ -36,10 +36,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // execute the timeline
     const result = await executeTimeline(timeline, fileMap)
 
-    // clean up input tmp files
     Object.values(fileMap).forEach(p => {
       if (fs.existsSync(p)) fs.unlinkSync(p)
     })
@@ -51,13 +49,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // read the output file and stream it back
     const outputBuffer = fs.readFileSync(result.outputPath)
-
-    // clean up output file after reading
     fs.unlinkSync(result.outputPath)
 
-    // also generate EDL for pro editors
     const edl = generateEDL(timeline)
 
     return new NextResponse(outputBuffer, {
